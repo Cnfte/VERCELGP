@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0">
+    <title>Gemini Pro WebUI</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d0d0d;
+            --surface: #161616;
+            --surface2: #1e1e1e;
+            --border: rgba(255, 255, 255, 0.07);
+            --accent: #6366f1;
+            --accent2: #8b5cf6;
+            --text: #e4e4e7;
+            --text2: #71717a;
+            --user-bubble: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --ai-bubble: #1e1e1e;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scrollbar-width: thin;
+            scrollbar-color: #3f3f46 transparent
+        }
+
+        *::-webkit-scrollbar {
+            width: 4px;
+            height: 4px
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 2px
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden
+        }
+
+        body {
+            font-family: -apple-system, "Inter", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex
+        }
+
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform .35s cubic-bezier(.4, 0, .2, 1)
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                z-index: 1001;
+                transform: translateX(-100%)
+            }
+
+            body.sb-open .sidebar {
+                transform: translateX(0);
+                box-shadow: 20px 0 60px rgba(0, 0, 0, .6)
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .55);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s
+        }
+
+        body.sb-open .overlay {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .session-item {
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text2);
+            transition: background .15s, color .15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden
+        }
+
+        .session-item:hover {
+            background: rgba(255, 255, 255, .05);
+            color: var(--text)
+        }
+
+        .session-item.active {
+            background: rgba(99, 102, 241, .15);
+            color: var(--accent);
+            font-weight: 600
+        }
+
+        .session-item .del-btn {
+            position: absolute;
+            right: 8px;
+            opacity: 0;
+            transition: opacity .15s;
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(239, 68, 68, .2);
+            color: #ef4444;
+            font-size: 11px;
+            border: none;
+            cursor: pointer
+        }
+
+        .session-item:hover .del-btn {
+            opacity: 1
+        }
+
+        .bubble-u {
+            background: var(--user-bubble);
+            color: #fff;
+            border-radius: 20px 20px 4px 20px;
+            padding: 12px 18px;
+            font-size: 15px;
+            line-height: 1.65;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, .25);
+            animation: slideInRight .25s cubic-bezier(.34, 1.56, .64, 1);
+            word-break: break-word
+        }
+
+        .bubble-a {
+            background: var(--ai-bubble);
+            color: var(--text);
+            border-radius: 20px 20px 20px 4px;
+            padding: 14px 18px;
+            font-size: 15px;
+            line-height: 1.65;
+            border: 1px solid var(--border);
+            animation: slideInLeft .25s cubic-bezier(.34, 1.56, .64, 1);
+            word-break: break-word;
+            overflow-x: auto
+        }
+
+        .bubble-err {
+            background: rgba(239, 68, 68, .1);
+            border: 1px solid rgba(239, 68, 68, .3);
+            color: #fca5a5;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 13px;
+            max-width: 480px
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px) scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px) scale(.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, .4)
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(99, 102, 241, 0)
+            }
+        }
+
+        @keyframes typingPulse {
+
+            0%,
+            60%,
+            100% {
+                transform: scale(.7);
+                opacity: .4
+            }
+
+            30% {
+                transform: scale(1.15);
+                opacity: 1
+            }
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block
+        }
+
+        .typing-dot:nth-child(1) {
+            animation: typingPulse 1.4s .0s infinite
+        }
+
+        .typing-dot:nth-child(2) {
+            animation: typingPulse 1.4s .2s infinite
+        }
+
+        .typing-dot:nth-child(3) {
+            animation: typingPulse 1.4s .4s infinite
+        }
+
+        .bubble-a h1,
+        .bubble-a h2,
+        .bubble-a h3 {
+            font-weight: 700;
+            margin: 14px 0 6px;
+            color: #a5b4fc
+        }
+
+        .bubble-a h1 {
+            font-size: 1.3em
+        }
+
+        .bubble-a h2 {
+            font-size: 1.15em
+        }
+
+        .bubble-a h3 {
+            font-size: 1.05em
+        }
+
+        .bubble-a p {
+            margin: 6px 0
+        }
+
+        .bubble-a ul,
+        .bubble-a ol {
+            margin: 8px 0 8px 20px
+        }
+
+        .bubble-a li {
+            margin: 3px 0
+        }
+
+        .bubble-a blockquote {
+            border-left: 3px solid var(--accent);
+            margin: 8px 0;
+            padding-left: 14px;
+            color: var(--text2);
+            font-style: italic
+        }
+
+        .bubble-a table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 13px
+        }
+
+        .bubble-a th,
+        .bubble-a td {
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            text-align: left
+        }
+
+        .bubble-a th {
+            background: rgba(99, 102, 241, .15);
+            color: #a5b4fc
+        }
+
+        .bubble-a code:not(pre code) {
+            background: rgba(255, 255, 255, .1);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: .88em;
+            font-family: "SF Mono", Menlo, Consolas, monospace;
+            color: #a5b4fc
+        }
+
+        .bubble-a pre {
+            position: relative;
+            margin: 10px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border)
+        }
+
+        .bubble-a pre code {
+            font-size: 13px !important;
+            display: block;
+            padding: 16px !important
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            z-index: 1
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            color: #fff
+        }
+
+        .input-area {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            padding: 8px 8px 8px 14px;
+            transition: border-color .2s, box-shadow .2s
+        }
+
+        .input-area:focus-within {
+            border-color: rgba(99, 102, 241, .5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .1)
+        }
+
+        textarea {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 16px;
+            line-height: 1.5;
+            resize: none;
+            flex: 1;
+            max-height: 140px;
+            font-family: inherit
+        }
+
+        textarea::placeholder {
+            color: var(--text2)
+        }
+
+        .btn-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--user-bubble);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .15s, opacity .15s
+        }
+
+        .btn-send:hover {
+            transform: scale(1.08)
+        }
+
+        .btn-send:active {
+            transform: scale(.92)
+        }
+
+        .btn-send:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text2);
+            padding: 6px;
+            border-radius: 8px;
+            transition: color .15s, background .15s;
+            display: flex;
+            align-items: center
+        }
+
+        .btn-icon:hover {
+            color: var(--accent);
+            background: rgba(99, 102, 241, .1)
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--surface2);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s, transform .25s;
+            z-index: 9999
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0)
+        }
+
+        .settings-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center
+        }
+
+        .settings-panel.open {
+            display: flex;
+            animation: fadeInUp .2s ease
+        }
+
+        .settings-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            width: min(480px, 92vw);
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .6)
+        }
+
+        .settings-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text2);
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block
+        }
+
+        .settings-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .settings-input:focus {
+            border-color: rgba(99, 102, 241, .5)
+        }
+
+        select.settings-input option {
+            background: var(--surface2);
+            color: var(--text)
+        }
+
+        .model-badge {
+            background: rgba(99, 102, 241, .15);
+            color: #a5b4fc;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background .15s
+        }
+
+        .model-badge:hover {
+            background: rgba(99, 102, 241, .3)
+        }
+
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 16px;
+            animation: fadeInUp .4s ease;
+            padding: 20px
+        }
+
+        .welcome-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            background: var(--user-bubble);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px rgba(99, 102, 241, .35);
+            animation: pulse-glow 3s infinite
+        }
+
+        .quick-prompt {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--text2);
+            cursor: pointer;
+            transition: border-color .15s, color .15s, background .15s;
+            text-align: left;
+            width: 100%
+        }
+
+        .quick-prompt:hover {
+            border-color: rgba(99, 102, 241, .4);
+            color: var(--text);
+            background: rgba(99, 102, 241, .08)
+        }
+
+        .file-tag {
+            background: rgba(99, 102, 241, .15);
+            color: #a5b4fc;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .file-tag button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #a5b4fc;
+            font-size: 14px;
+            line-height: 1;
+            padding: 0
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--bg)
+        }
+
+        header {
+            height: 58px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: rgba(13, 13, 13, .8);
+            backdrop-filter: blur(12px);
+            flex-shrink: 0
+        }
+
+        #chatBox {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px
+        }
+
+        footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            background: rgba(13, 13, 13, .8);
+            backdrop-filter: blur(12px);
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            flex-shrink: 0
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast"></div>
+    <div class="overlay" onclick="toggleSB()"></div>
+
+    <aside class="sidebar">
+        <div style="padding:20px 16px 14px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+                <div
+                    style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <span style="font-weight:800;font-size:15px">Gemini Pro</span>
+            </div>
+            <button onclick="newChat()"
+                style="width:100%;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;padding:10px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s"
+                onmouseover="this.style.background='rgba(99,102,241,.25)'"
+                onmouseout="this.style.background='rgba(99,102,241,.15)'">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>新建对话
+            </button>
+        </div>
+        <div id="sessionList" style="flex:1;overflow-y:auto;padding:0 8px"></div>
+        <div style="padding:14px 16px 20px;border-top:1px solid rgba(255,255,255,.06)">
+            <button onclick="openSettings()"
+                style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:10px;border-radius:12px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .15s"
+                onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text2)'">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                设置 / API Key
+            </button>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <div style="display:flex;align-items:center;gap:10px">
+                <button class="btn-icon" onclick="toggleSB()" style="display:none" id="menuBtn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 12h18M3 6h18M3 18h18" />
+                    </svg>
+                </button>
+                <span id="chatTitle"
+                    style="font-weight:700;font-size:15px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">新对话</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+                <span class="model-badge" onclick="openSettings()" id="modelBadge">Gemini</span>
+                <button class="btn-icon" onclick="clearChat()" title="清空对话"><svg width="16" height="16" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                    </svg></button>
+                <button class="btn-icon" onclick="exportChat()" title="导出对话"><svg width="16" height="16" fill="none"
+                        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                    </svg></button>
+            </div>
+        </header>
+
+        <div id="chatBox"></div>
+
+        <div id="loadingEl" style="display:none;padding:0 16px 12px">
+            <div
+                style="display:flex;gap:5px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);width:fit-content;border-radius:16px">
+                <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+            </div>
+        </div>
+
+        <footer>
+            <div id="previews"
+                style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;max-width:860px;margin-left:auto;margin-right:auto">
+            </div>
+            <div class="input-area" style="max-width:860px;margin:0 auto">
+                <label class="btn-icon" style="flex-shrink:0;cursor:pointer" title="上传图片/文件">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path
+                            d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                    <input type="file" id="fileInp" style="display:none" multiple
+                        accept="image/*,.txt,.pdf,.md,.js,.py,.json,.csv" onchange="handleFiles(this)">
+                </label>
+                <textarea id="uInput" rows="1" placeholder="给 Gemini 发消息..." onkeydown="handleEnter(event)"
+                    oninput="autoResize(this)"></textarea>
+                <button class="btn-send" onclick="send()" id="sendBtn" title="发送 (Enter)">
+                    <svg width="17" height="17" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+                    </svg>
+                </button>
+            </div>
+            <div
+                style="text-align:center;font-size:11px;color:var(--text2);margin-top:8px;max-width:860px;margin-left:auto;margin-right:auto">
+                AI 可能出错，请核实重要信息。Enter 发送 · Shift+Enter 换行</div>
+        </footer>
+    </main>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel" onclick="if(event.target===this)closeSettings()">
+        <div class="settings-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <h2 style="font-size:18px;font-weight:800">设置</h2>
+                <button onclick="closeSettings()"
+                    style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:18px">
+                <div>
+                    <label class="settings-label">Gemini API Key</label>
+                    <input type="password" id="apiKey" class="settings-input" placeholder="AIza..." autocomplete="off">
+                    <div style="font-size:11px;color:var(--text2);margin-top:5px">Key 仅存储在浏览器本地，不上传到任何服务器。</div>
+                </div>
+                <div>
+                    <label class="settings-label">模型</label>
+                    <select id="modelSelect" class="settings-input" style="cursor:pointer">
+                        <option value="gemini-2.5-flash-preview-04-17">Gemini 2.5 Flash Preview</option>
+                        <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash</option>
+                        <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    </select>
+                    <button onclick="fetchModels()"
+                        style="margin-top:8px;background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;padding:0">↻
+                        从 API 刷新模型列表</button>
+                </div>
+                <div>
+                    <label class="settings-label">Temperature <span id="tempVal"
+                            style="color:var(--accent)">1.0</span></label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="1.0"
+                        style="width:100%;accent-color:var(--accent)"
+                        oninput="document.getElementById('tempVal').textContent=parseFloat(this.value).toFixed(1)">
+                </div>
+                <div>
+                    <label class="settings-label">系统提示词（System Prompt）</label>
+                    <textarea id="systemPrompt" class="settings-input" rows="3" placeholder="你是一个有帮助的 AI 助手..."
+                        style="resize:vertical"></textarea>
+                </div>
+                <div
+                    style="padding:14px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:12px">
+                    <div style="font-size:12px;font-weight:700;color:#a5b4fc;margin-bottom:6px">OpenAI 兼容接口</div>
+                    <div style="font-size:12px;color:var(--text2)">Base URL（NextChat / ChatBox / LobeChat 等）:</div>
+                    <div id="openaiBaseUrl"
+                        style="font-size:12px;color:#a5b4fc;font-family:monospace;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:8px;margin-top:6px;cursor:pointer;word-break:break-all"
+                        onclick="copyOpenAIBase()">请先填写 API Key</div>
+                    <div style="font-size:11px;color:var(--text2);margin-top:4px">点击地址栏可复制</div>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button onclick="saveSettings()"
+                        style="flex:1;background:var(--user-bubble);color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;transition:opacity .15s"
+                        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">保存设置</button>
+                    <button onclick="closeSettings()"
+                        style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:12px 18px;border-radius:12px;font-size:14px;cursor:pointer">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'GEMINI_DB_V3', CFG_KEY = 'GEMINI_CFG_V3';
+        let db = [], curId = null, pFiles = [], isGenerating = false;
+        let cfg = { apiKey: '', model: 'gemini-2.0-flash', temperature: 1.0, systemPrompt: '' };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCfg(); loadDB(); updateMenuBtn();
+            marked.use({ breaks: true, gfm: true });
+            hljs.configure({ ignoreUnescapedHTML: true });
+            updateOpenAIBaseUrl();
+        });
+        window.addEventListener('resize', updateMenuBtn);
+
+        function updateMenuBtn() { const b = document.getElementById('menuBtn'); if (b) b.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; }
+
+        function loadCfg() {
+            try { const s = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); cfg = { ...cfg, ...s }; } catch (_) { }
+            const els = { apiKey: document.getElementById('apiKey'), modelSelect: document.getElementById('modelSelect'), temperature: document.getElementById('temperature'), tempVal: document.getElementById('tempVal'), systemPrompt: document.getElementById('systemPrompt') };
+            if (els.apiKey) els.apiKey.value = cfg.apiKey || '';
+            if (els.modelSelect) {
+                const mid = (cfg.model || 'gemini-2.0-flash').replace(/^models\//, '');
+                let found = false;
+                for (const o of els.modelSelect.options) { if (o.value === mid) { found = true; break; } }
+                if (!found && mid) { const o = document.createElement('option'); o.value = mid; o.textContent = mid; els.modelSelect.insertBefore(o, els.modelSelect.firstChild); }
+                els.modelSelect.value = mid;
+            }
+            if (els.temperature) els.temperature.value = cfg.temperature ?? 1.0;
+            if (els.tempVal) els.tempVal.textContent = parseFloat(cfg.temperature ?? 1.0).toFixed(1);
+            if (els.systemPrompt) els.systemPrompt.value = cfg.systemPrompt || '';
+            updateModelBadge();
+        }
+
+        function loadDB() {
+            try { db = JSON.parse(localStorage.getItem(DB_KEY) || '[]'); } catch (_) { db = []; }
+            if (!db.length) { newChat(); } else {
+                const sid = localStorage.getItem('GEMINI_CUR_V3');
+                curId = (db.find(x => x.id === sid) ? sid : db[0].id);
+                switchChat(curId);
+            }
+        }
+        function saveDB() { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (_) { } }
+        function updateModelBadge() { const m = (cfg.model || '').replace(/^models\//, ''); const e = document.getElementById('modelBadge'); if (e) e.textContent = m.length > 20 ? m.slice(0, 20) + '…' : (m || 'Gemini'); }
+
+        function newChat() { const id = 'c' + Date.now(); db.unshift({ id, title: '新对话', msgs: [] }); saveDB(); switchChat(id); }
+
+        function switchChat(id) {
+            const f = db.find(x => x.id === id);
+            if (!f) { if (db.length) switchChat(db[0].id); else newChat(); return; }
+            curId = id; localStorage.setItem('GEMINI_CUR_V3', id);
+            const t = document.getElementById('chatTitle'); if (t) t.textContent = f.title;
+            renderMsgs(false); renderList(); document.body.classList.remove('sb-open');
+        }
+
+        function deleteSession(id, ev) {
+            ev.stopPropagation(); db = db.filter(x => x.id !== id); saveDB();
+            if (curId === id) { if (db.length) switchChat(db[0].id); else newChat(); } else renderList();
+        }
+
+        function clearChat() {
+            const s = db.find(x => x.id === curId);
+            if (s) { s.msgs = []; s.title = '新对话'; saveDB(); renderMsgs(false); renderList(); toast('对话已清空'); }
+        }
+
+        function exportChat() {
+            const s = db.find(x => x.id === curId);
+            if (!s || !s.msgs.length) { toast('没有可导出的内容'); return; }
+            const md = s.msgs.map(m => (m.role === 'user' ? '**用户**' : '**AI**') + ':\n\n' + ((m.parts && m.parts[0] && m.parts[0].text) || '')).join('\n\n---\n\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+            a.download = (s.title || 'chat').replace(/[^\w\u4e00-\u9fa5]/g, '_') + '.md';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+            toast('导出成功 ✓');
+        }
+
+ function renderList() {
+    const e = document.getElementById('sessionList'); 
+    if (!e) return;
+    
+    e.innerHTML = db.map(s => `
+        <div class="session-item ${s.id === curId ? 'active' : ''}" onclick="switchChat('${s.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.title)}</span>
+            <button class="del-btn" onclick="deleteSession('${s.id}',event)">✕</button>
+        </div>
+    `).join('');
+}
+
+function openSettings(){
+    const els={apiKey:document.getElementById('apiKey'),modelSelect:document.getElementById('modelSelect'),temperature:document.getElementById('temperature'),tempVal:document.getElementById('tempVal'),systemPrompt:document.getElementById('systemPrompt')};
+    if(els.apiKey)els.apiKey.value=cfg.apiKey||'';
+    if(els.modelSelect){const mid=(cfg.model||'').replace(/^models\//,'');els.modelSelect.value=mid;}
+    if(els.temperature)els.temperature.value=cfg.temperature??1.0;
+    if(els.tempVal)els.tempVal.textContent=parseFloat(cfg.temperature??1.0).toFixed(1);
+    if(els.systemPrompt)els.systemPrompt.value=cfg.systemPrompt||'';
+    updateOpenAIBaseUrl();
+    document.getElementById('settingsPanel').classList.add('open');
+}
+function closeSettings(){document.getElementById('settingsPanel').classList.remove('open');}
+
+function saveSettings(){
+    const ak=document.getElementById('apiKey'),ms=document.getElementById('modelSelect'),te=document.getElementById('temperature'),sp=document.getElementById('systemPrompt');
+    if(ak)cfg.apiKey=ak.value.trim();
+    if(ms)cfg.model=(ms.value||'gemini-2.0-flash').replace(/^models\//,'');
+    if(te)cfg.temperature=parseFloat(te.value);
+    if(sp)cfg.systemPrompt=sp.value.trim();
+    try{localStorage.setItem(CFG_KEY,JSON.stringify(cfg));}catch(_){}
+    updateModelBadge();updateOpenAIBaseUrl();closeSettings();toast('设置已保存 ✓');
+}
+
+function updateOpenAIBaseUrl(){
+    const ak=document.getElementById('apiKey');
+    const key=cfg.apiKey||(ak?ak.value.trim():'')||'YOUR_KEY';
+    const el=document.getElementById('openaiBaseUrl');
+    if(el)el.textContent=location.origin+'/turnopenai/'+encodeURIComponent(key)+'/v1';
+}
+
+function copyOpenAIBase(){
+    const el=document.getElementById('openaiBaseUrl');
+    const txt=el?el.textContent:'';
+    if(!txt||txt.includes('YOUR_KEY')){toast('请先填写 API Key');return;}
+    _copy(txt,()=>toast('Base URL 已复制 ✓'),()=>toast('复制失败'));
+}
+
+function _copy(text,ok,fail){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(ok).catch(()=>{_fallbackCopy(text)?ok():fail();});}
+    else{_fallbackCopy(text)?ok():fail();}
+}
+function _fallbackCopy(text){
+    const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);return ok;
+}
+
+async function fetchModels(){
+    const k=cfg.apiKey||(document.getElementById('apiKey')||{}).value?.trim();
+    if(!k){toast('请先填写 API Key');return;}
+    toast('正在获取模型列表...');
+    try{
+        const r=await fetch('/v1beta/models?key='+encodeURIComponent(k));
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const d=await r.json();
+        if(d.error)throw new Error(d.error.message||'未知错误');
+        const models=(d.models||[]).filter(m=>m.name&&m.name.includes('gemini')&&(m.supportedGenerationMethods||[]).includes('generateContent'));
+        if(!models.length){toast('未找到可用模型');return;}
+        const sel=document.getElementById('modelSelect');if(!sel)return;
+        const cur=sel.value;
+        // 注意：这里的模板字符串不再有反斜杠转义
+        sel.innerHTML=models.map(m=>{
+            const id=m.name.replace('models/','');
+            return `<option value="${escHtml(id)}" ${id===cur?'selected':''}>${escHtml(m.displayName||id)}</option>`;
+        }).join('');
+        if(!sel.value&&models.length)sel.value=models[0].name.replace('models/','');
+        toast('已刷新 ✓ 共 '+models.length+' 个模型');
+    }catch(e){toast('获取模型失败: '+e.message);}
+}
+
+function handleFiles(inp){
+    Array.from(inp.files||[]).forEach(f=>{
+        if(f.size>10*1024*1024){toast('文件超过 10MB: '+f.name);return;}
+        const r=new FileReader();
+        r.onload=e=>{pFiles.push({n:f.name,t:f.type||'text/plain',d:e.target.result});renderPreviews();};
+        r.onerror=()=>toast('读取失败: '+f.name);
+        f.type.startsWith('image/')?r.readAsDataURL(f):r.readAsText(f,'UTF-8');
+    });
+    inp.value='';
+}
+
+function renderPreviews(){
+    const e=document.getElementById('previews');if(!e)return;
+    e.innerHTML=pFiles.map((f,i)=>`<div class="file-tag">${f.t.startsWith('image/')?'🖼':'📄'} ${escHtml(f.n)} <button onclick="removeFile(${i})">✕</button></div>`).join('');
+}
+function removeFile(i){pFiles.splice(i,1);renderPreviews();}
+
+async function send(){
+    if(isGenerating)return;
+    const inp=document.getElementById('uInput');
+    const val=inp?inp.value.trim():'';
+    if(!cfg.apiKey){openSettings();toast('请先配置 API Key');return;}
+    if(!val&&!pFiles.length)return;
+
+    const s=db.find(x=>x.id===curId);
+    if(!s){toast('请先创建或选择对话');return;}
+
+    if(s.msgs.length===0){
+        s.title=(val.slice(0,20)||(pFiles[0]&&pFiles[0].n)||'新对话')+(val.length>20?'…':'');
+        const t=document.getElementById('chatTitle');if(t)t.textContent=s.title;
+    }
+
+    let pts=[];
+    if(val)pts.push({text:val});
+    for(const f of pFiles){
+        if(f.t.startsWith('image/')){
+            pts.push({inline_data:{mime_type:f.t,data:f.d.split(',')[1]}});
+        }else{
+            if(pts.length&&pts[0].text!==undefined)pts[0].text+='\n\n【文件: '+f.n+'】\n'+f.d;
+            else pts.push({text:'【文件: '+f.n+'】\n'+f.d});
+        }
+    }
+    if(!pts.length)pts=[{text:'（空消息）'}];
+
+    s.msgs.push({role:'user',parts:pts});
+    pFiles=[];
+    if(inp){inp.value='';inp.style.height='auto';}
+    renderPreviews();renderMsgs(true);setGenerating(true);
+
+    const contents=s.msgs.map(m=>({role:m.role,parts:m.parts}));
+    const reqBody={contents,generationConfig:{temperature:cfg.temperature}};
+    if(cfg.systemPrompt)reqBody.systemInstruction={parts:[{text:cfg.systemPrompt}]};
+
+    const modelId=(cfg.model||'gemini-2.0-flash').replace(/^models\//,'');
+    const endpoint='/v1beta/models/'+encodeURIComponent(modelId)+':streamGenerateContent?key='+encodeURIComponent(cfg.apiKey)+'&alt=sse';
+
+    const aiIdx=s.msgs.length;
+    s.msgs.push({role:'model',parts:[{text:''}]});
+
+    try{
+        const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(reqBody)});
+
+        if(!resp.ok){
+            let errMsg='HTTP '+resp.status;
+            try{const ed=await resp.json();errMsg=ed?.error?.message||errMsg;}catch(_){}
+            throw new Error(errMsg);
+        }
+
+        const reader=resp.body.getReader();
+        const dec=new TextDecoder();
+        let full='',buf='',gotData=false;
+
+        while(true){
+            const{done,value}=await reader.read();
+            if(done)break;
+            gotData=true;setLoading(false);
+            buf+=dec.decode(value,{stream:true});
+            const lines=buf.split('\n');buf=lines.pop();
+            for(const line of lines){
+                const t=line.trim();
+                if(!t||t==='data: [DONE]')continue;
+                if(t.startsWith('data: ')){
+                    try{
+                        const p=JSON.parse(t.slice(6));
+                        if(p.error)throw new Error(p.error.message||JSON.stringify(p.error));
+                        const tx=(p?.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('');
+                        if(tx){full+=tx;s.msgs[aiIdx].parts[0].text=full;renderMsgs(true);}
+                    }catch(pe){if(pe.message&&!pe.message.includes('JSON'))throw pe;}
+                }
+            }
+        }
+        // 处理剩余缓冲区
+        if(buf.trim().startsWith('data: ')){
+            try{const p=JSON.parse(buf.trim().slice(6));const tx=(p?.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('');if(tx){full+=tx;s.msgs[aiIdx].parts[0].text=full;}}catch(_){}
+        }
+        if(!full)s.msgs[aiIdx].parts[0].text=gotData?'（模型返回了空响应）':'（未收到响应，请检查网络或 API Key）';
+        saveDB();renderList();renderMsgs(true);
+    }catch(e){
+        if(s.msgs.length>aiIdx&&s.msgs[aiIdx].role==='model'&&!s.msgs[aiIdx].parts[0].text)s.msgs.splice(aiIdx,1);
+        s.msgs.push({role:'model',parts:[{text:'❌ 请求失败: '+e.message}],isError:true});
+        saveDB();renderMsgs(true);toast('请求失败: '+e.message);
+    }finally{setGenerating(false);}
+}
+
+function setGenerating(v){
+    isGenerating=v;
+    const b=document.getElementById('sendBtn');if(b)b.disabled=v;
+    setLoading(v);
+}
+function setLoading(v){const e=document.getElementById('loadingEl');if(e)e.style.display=v?'block':'none';}
+
+function renderMsgs(scroll){
+    const s=db.find(x=>x.id===curId);
+    const box=document.getElementById('chatBox');if(!box)return;
+
+    if(!s||!s.msgs.length){
+        box.innerHTML=`<div class="welcome">
+            <div class="welcome-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div style="font-size:22px;font-weight:800">有什么我能帮你的？</div>
+            <div style="color:var(--text2);font-size:14px">选择示例或直接输入</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:480px">
+                <button class="quick-prompt" onclick="quickSend('帮我写一段 Python 代码，实现快速排序算法')">💻 Python 快速排序</button>
+                <button class="quick-prompt" onclick="quickSend('解释一下量子纠缠是什么')">🔬 解释量子纠缠</button>
+                <button class="quick-prompt" onclick="quickSend('给我推荐 5 本科幻小说')">📚 科幻小说推荐</button>
+                <button class="quick-prompt" onclick="quickSend('帮我优化这段代码的性能')">⚡ 代码性能优化</button>
+            </div>
+        </div>`;
+        return;
+    }
+
+    // 流式更新时只刷新最后一条 AI 消息
+    const lastMsg=s.msgs[s.msgs.length-1];
+    if(isGenerating&&lastMsg.role==='model'){
+        const lastEl=box.querySelector('[data-idx="'+(s.msgs.length-1)+'"]');
+        if(lastEl){
+            lastEl.innerHTML=renderMarkdown(lastMsg.parts[0].text||'');
+            addCopyBtns(lastEl);
+            if(scroll)box.scrollTop=box.scrollHeight;
+            return;
+        }
+    }
+
+    box.innerHTML=s.msgs.map((m,idx)=>`
+        <div style="display:flex;justify-content:${m.role==='user'?'flex-end':'flex-start'};align-items:flex-start;gap:8px">
+            ${m.role==='model'?'<div style="width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>':''}
+            <div class="${m.role==='user'?'bubble-u':(m.isError?'bubble-err':'bubble-a')}" style="max-width:min(85%,720px)" data-idx="${idx}">
+                ${m.role==='user'?escHtml((m.parts[0]&&m.parts[0].text)||'').replace(/\\n/g,'<br>'):renderMarkdown((m.parts[0]&&m.parts[0].text)||'')}
+            </div>
+            ${m.role==='user'?'<div style="width:30px;flex-shrink:0"></div>':''}
+        </div>
+    `).join('');
+
+    box.querySelectorAll('.bubble-a').forEach(el=>addCopyBtns(el));
+    if(scroll)box.scrollTop=box.scrollHeight;
+}
+
+function addCopyBtns(c){
+    c.querySelectorAll('pre').forEach(pre=>{
+        if(pre.querySelector('.copy-btn'))return;
+        const btn=document.createElement('button');btn.className='copy-btn';btn.textContent='复制';
+        btn.onclick=ev=>{
+            ev.stopPropagation();
+            const code=(pre.querySelector('code')||pre).textContent;
+            _copy(code,()=>{btn.textContent='✓ 已复制';setTimeout(()=>btn.textContent='复制',2000);},()=>{btn.textContent='失败';setTimeout(()=>btn.textContent='复制',2000);});
+        };
+        pre.appendChild(btn);
+    });
+    c.querySelectorAll('pre code:not([data-highlighted])').forEach(b=>hljs.highlightElement(b));
+}
+
+function renderMarkdown(text){
+    if(!text)return '<span style="opacity:.4;font-style:italic">思考中...</span>';
+    try{return marked.parse(text);}catch(_){return '<pre style="white-space:pre-wrap">'+escHtml(text)+'</pre>';}
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+function quickSend(text){const e=document.getElementById('uInput');if(e){e.value=text;autoResize(e);}send();}
+function toggleSB(){document.body.classList.toggle('sb-open');}
+function handleEnter(e){if(e.key==='Enter'&&!e.shiftKey&&window.innerWidth>768){e.preventDefault();send();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
+
+let _toastT;
+function toast(msg){
+    const e=document.getElementById('toast');if(!e)return;
+    e.textContent=msg;e.classList.add('show');
+    clearTimeout(_toastT);_toastT=setTimeout(()=>e.classList.remove('show'),2800);
+}
+    </script>
+</body>
+
+</html>
