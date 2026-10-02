@@ -1,128 +1,115 @@
-# VERCELGP v3.0
+# VERCELGP v3.5 (Liquid Glass Edition)
 
-**Gemini API 代理服务** —— 零门槛利用 Vercel 搭建属于你的 Gemini 专属 AI 助手（国内直连方案）
+**Gemini API 全功能智能代理服务 & 现代化液态玻璃 WebUI** —— 零门槛利用 Vercel 搭建属于你的个人专属 AI 助手（国内直连方案）
 
-Gemini 是谷歌推出的新一代人工智能大模型，在代码理解、网页开发等领域表现出色，且 Google AI Studio 提供了免费的 Gemini API。本项目通过 Vercel 边缘网络实现反向代理，帮助国内用户无需改变网络环境即可稳定、高效地访问 Gemini API。项目采用原生 Node.js `https` 模块实现，部署简单、轻量高效，同时内置现代化 WebUI 与 OpenAI 兼容接口，适合个人使用、二次开发或对接第三方 AI 客户端。
+Gemini 是谷歌推出的新一代人工智能大模型。本项目通过 Vercel 边缘网络实现高性能反向代理，帮助国内用户无需改变网络环境即可稳定、高效地访问 Gemini 官方 API。
 
-> **免责声明**：  
-> 本工具及相关教程仅用于网络科普与技术交流示范。请务必在遵守相关法律法规的前提下使用。严禁利用本工具谋取非法利益或从事违法活动，由此产生的任何法律后果与作者无关。
-
-## 主要特性（v3.0 重构）
-
-- **极致轻量**：移除 axios 依赖，使用 Node.js 内置 `https`/`http` 模块，冷启动更快、部署体积更小。
-- **速率限制**：内置内存级 IP 限流（默认 180 次/分钟），防止滥用。
-- **安全强化**：路径注入防护、完整 CORS 支持、安全响应头（`X-Content-Type-Options`、`X-Frame-Options`、`Referrer-Policy` 等），移除 `X-Powered-By`。
-- **OpenAI 兼容接口**：提供 `/turnopenai/{GEMINI_KEY}/v1/` 路由，可直接对接 NextChat、ChatBox、LobeChat 等第三方 AI 客户端。
-- **现代化 WebUI**：
-  - 暗黑主题 + 流式动画、打字机效果
-  - Markdown 渲染、代码块一键复制
-  - 对话管理（新建、删除、导出 Markdown）
-  - System Prompt 设置、Temperature 滑块调节
-  - 多模态支持（图片上传分析）
-  - Toast 通知 + 响应式移动端适配
-- **智能兼容**：自动处理 `v1`/`v1beta` 版本切换及字段兼容性（`systemInstruction` 等字段自动过滤）。
-- **健康检查**：`GET /health` 端点。
-- **Vercel 原生优化**：单文件 Serverless 部署，无需额外配置。
-
-## 前期准备
-
-开始前，请确保你已拥有以下工具：
-
-1. **GitHub 账号**：用于托管代码。
-2. **一个域名**（推荐）：支持 CNAME 解析即可。若没有域名，可前往 [dpdns.org](https://dpdns.org) 免费获取二级域名。
-3. **网络访问环境**：用于初始获取 Gemini API Key（来自 [Google AI Studio](https://aistudio.google.com)）。
-4. **Vercel 账号**：用于部署服务。
-
-## 快速部署（一键完成）
-
-1. **Fork 项目**  
-   访问 [https://github.com/Cnfte/VERCELGP](https://github.com/Cnfte/VERCELGP)，点击右上角 **Fork** 按钮保存到你的仓库。
-
-2. **关联 Vercel**  
-   进入 [vercel.com](https://vercel.com)，选择 **Continue with GitHub** 登录。
-
-3. **导入并部署**  
-   在 Vercel 控制台点击 **Add New...** → **Project**，找到你 Fork 的 `VERCELGP` 项目，点击 **Import**。无需修改任何参数，直接点击 **Deploy**。部署通常在 30 秒内完成。
-
-4. **绑定自定义域名（强烈推荐）**  
-   部署完成后，进入项目 **Settings** → **Domains**，添加你的自定义域名。  
-   在你的 DNS 服务商处添加一条 **CNAME** 记录。  
-   **进阶建议**：为获得更快的国内访问速度，将 CNAME 指向 `cname-china.vercel-dns.com`。
-
-5. **开始使用**  
-   域名解析生效后，访问你的自定义域名即可进入 WebUI。输入 Gemini API Key 后即可畅聊。  
-   也可将部署链接作为 API 代理地址对接其他 AI 客户端。
-
-## 使用说明
-
-### 1. WebUI 使用
-- 打开部署后的域名（推荐使用自定义域名）。
-- 点击设置面板输入你的 Gemini API Key。
-- 支持新建对话、历史管理、图片上传、模型切换、温度调节、System Prompt 等功能。
-
-### 2. OpenAI 兼容接口（推荐第三方客户端）
-将客户端的 **Base URL** 设置为：
-
-```
-https://your-domain.com/turnopenai/{YOUR_GEMINI_API_KEY}/v1
-```
-
-**支持端点**：
-- `GET /v1/models` —— 模型列表
-- `POST /v1/chat/completions` —— 对话补全（支持流式输出）
-
-WebUI 设置面板会自动生成并提供一键复制地址。
-
-### 3. 原生 Gemini API 调用
-所有请求自动透明转发至 Google 官方接口：
-
-```bash
-curl -X POST "https://your-domain.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "contents": [{ "parts": [{ "text": "你好，Gemini！" }] }]
-  }'
-```
-
-## 文件结构
-
-```
-.
-├── server.js          # 核心服务（WebUI + 代理 + OpenAI 兼容 + 安全中间件）
-├── package.json       # 项目配置与依赖
-├── vercel.json        # Vercel 路由配置
-├── .gitignore
-└── README.md
-```
-
-## 注意事项
-
-- **API Key 安全**：Key 仅通过请求传递，服务器不存储。
-- **Vercel 免费版限制**：
-  - 请求 Body 大小上限约 4.5MB（大图片可能返回 413 错误）。
-  - 函数执行时长限制请参考 Vercel 官方文档。
-- **速率限制**：基于内存实现，重启后清零；多实例环境下独立计数。
-- **域名建议**：使用自定义域名 + `cname-china.vercel-dns.com` 可显著提升国内访问速度。
-- **本地开发**：
-  ```bash
-  npm install
-  npm start
-  ```
-  访问 `http://localhost:3000` 测试。
-
-## 技术栈
-
-- **运行时**：Node.js >= 18
-- **框架**：Express
-- **代理实现**：原生 `https` + `http` 模块
-- **WebUI**：Tailwind CSS + Marked + Highlight.js（全部内嵌）
-
-## 许可证
-
-MIT License © Cnfte
+本项目采用原生 Node.js 实现，无多余第三方冗余依赖，具备 **0 安全漏洞** 架构。内置全功能**现代化液态玻璃线性动画 WebUI** 与 **OpenAI 兼容接口**，完美支持 Google 最近更新的 **Gemini 2.5 Pro / 2.5 Flash / 2.0 Thinking / 联网搜索 (Google Search Grounding) / 思考链 (Reasoning)** 等全系功能特性。
 
 ---
 
-**项目地址**：https://github.com/Cnfte/VERCELGP
+## 🌟 主要特性 (v3.5 重构与升级)
 
-通过 Vercel 的边缘计算能力与自定义域名的结合，你已拥有一个稳定、高效的个人 Gemini AI 助手。技术应当连接智慧，而非制造隔阂。欢迎在 GitHub 提交 Issue 或 Pull Request 共同完善项目！
+### 1. 🛡️ 安全防御全面加固（0 漏洞）
+- **零漏洞依赖**：移除存在 CVE 漏洞的 `uuid` 包，升级至最新 Express 5，全量采用 Node.js 原生 `crypto.randomUUID()`，冷启动更快、体积更小。
+- **DoS 内存耗尽防御**：重构速率限制（滑动窗口 + 定时清理机制），严密防范 IP 伪造攻击与 Map 内存泄漏。
+- **路径遍历与注入拦截**：严格过滤 `..`、`%2e`、控制字符、CRLF 换行及非法 URL 字符。
+- **XSS 严格阻断**：全量集成 `DOMPurify` 消毒管道，强化 `Content-Security-Policy (CSP)`、`X-Content-Type-Options`、`X-Frame-Options` 等现代安全标头。
+- **资源保护**：监听客户端断开事件并立即销毁上游请求，彻底防止长连接悬挂与 API Quota 浪费。
+
+### 2. ⚡ 深度适配 Google 最新功能性模型
+- **Gemini 2.5 Pro**：旗舰级复杂逻辑推理、超强代码生成与长程任务规划。
+- **Gemini 2.5 Flash**：新一代全能高效模型，平衡自适应思考速度与顶级推理质量。
+- **Gemini 2.0 Flash / 2.0 Flash Lite**：GA 正式版极速多模态与超低延迟生成。
+- **Gemini 2.0 Flash Thinking Exp**：深度思考推理模型，完整输出内部思考脉络。
+- **🧠 深度思考链（Reasoning / Thought Trace）**：
+  - WebUI 内支持实时折叠查看思考推理过程（带动态流光指示）。
+  - OpenAI 兼容接口输出 `delta.reasoning_content`，无缝兼容 DeepSeek / OpenAI o1 格式的第三方客户端（如 NextChat / Cherry Studio / LobeChat）。
+- **🌐 实时联网检索（Google Search Grounding）**：一键开启 Google 官方搜索引擎联网检索，回复自动附带参考来源引文与可点击卡片。
+- **🛡️ 宽松安全审查策略**：默认放宽敏感词误报，防止编程调试与学术创作被过度拦截。
+
+### 3. ✨ 现代化液态玻璃 WebUI（Liquid Glass UI）
+- **拟态液态玻璃质感**：多层动态流体光球背景（Liquid Mesh Orbs）、高斯模糊毛玻璃面板、微米级镜面高光与微边框。
+- **平滑线性流体动画**：自然弹簧物理过渡、动态呼吸光标、思考过程平滑折叠展开。
+- **更方便的交互体验**：
+  - **顶部一键切换模型**：无需反复打开设置弹窗，顶部 Pill 快速下拉切换模型。
+  - **快捷功能 Pill**：顶部直接点击开关 Google 实时联网与深度思考。
+  - **多模态全支持**：支持直接粘贴截图（`Ctrl+V`）、文件拖拽上传、气泡内图片与附件缩略图预览（彻底修复旧版历史记录丢失图片的 Bug）。
+  - **代码块增强**：深色代码高亮、语言徽章展示、一键复制代码带反馈动画。
+  - **会话管理**：支持实时搜索历史会话、一键导出 Markdown / JSON 备份、清空与单条删除。
+
+### 4. 🔄 双模式 OpenAI 兼容接口
+提供两种调用方式，完美对接 NextChat、ChatBox、LobeChat、Cherry Studio、Claude Dev 等第三方客户端：
+- **方式一（路径传参，经典模式）**：
+  ```
+  https://your-domain.com/turnopenai/{YOUR_GEMINI_API_KEY}/v1
+  ```
+- **方式二（标准 Bearer Auth 模式）**：
+  ```
+  Base URL: https://your-domain.com/v1
+  Header:   Authorization: Bearer {YOUR_GEMINI_API_KEY}
+  ```
+
+---
+
+## 🚀 快速部署（一键完成）
+
+1. **Fork 项目**  
+   访问本项目仓库，点击右上角 **Fork** 按钮保存到你的 GitHub。
+
+2. **关联 Vercel 部署**  
+   进入 [vercel.com](https://vercel.com)，点击 **Add New...** → **Project**，导入 Fork 的 `VERCELGP` 项目，直接点击 **Deploy**。
+
+3. **绑定自定义域名（强烈推荐）**  
+   进入项目 **Settings** → **Domains** 添加你的域名。为获得最快速度，建议将 CNAME 解析至 `cname-china.vercel-dns.com`。
+
+4. **开始使用**  
+   访问域名即可体验液态玻璃 WebUI，填入 API Key 即可畅享 Gemini 2.5 / 2.0 强大能力！
+
+---
+
+## 📡 API 调用示例
+
+### 1. 原生 Gemini API 透明代理
+```bash
+curl -X POST "https://your-domain.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=YOUR_API_KEY&alt=sse" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{ "role": "user", "parts": [{ "text": "你好，请自我介绍！" }] }]
+  }'
+```
+
+### 2. OpenAI 兼容流式补全（含 Reasoning 思考链）
+```bash
+curl -X POST "https://your-domain.com/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "model": "gemini-2.5-pro",
+    "stream": true,
+    "messages": [
+      {"role": "user", "content": "请推导三门问题的概率"}
+    ]
+  }'
+```
+
+---
+
+## 🛠️ 本地开发与调试
+
+```bash
+# 1. 克隆代码并安装依赖
+npm install
+
+# 2. 启动服务
+npm start
+
+# 3. 访问 WebUI
+http://localhost:3000
+```
+
+---
+
+## 📄 许可证
+
+MIT License © Cnfte

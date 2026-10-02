@@ -17,8 +17,7 @@
   "author": "Cnfte",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.19.2",
-    "uuid": "^9.0.1"
+    "express": "^5.2.1"
   },
   "engines": {
     "node": ">=18"

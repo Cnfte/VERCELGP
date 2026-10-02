@@ -4,7 +4,11 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["index.html"],
+        "maxDuration": 60
+      }
     }
   ],
   "routes": [
