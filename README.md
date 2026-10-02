@@ -4,7 +4,7 @@
 
 Gemini 是谷歌推出的新一代人工智能大模型。本项目通过 Vercel 边缘网络实现高性能反向代理，帮助国内用户无需改变网络环境即可稳定、高效地访问 Gemini 官方 API。
 
-本项目采用原生 Node.js 实现，无多余第三方冗余依赖，具备 **0 安全漏洞** 架构。内置全功能**现代化液态玻璃线性动画 WebUI** 与 **OpenAI 兼容接口**，采用全扁平化视觉设计，无任何 Emoji，深度适配 Google 最近更新的 **Gemini 2.5 Pro / 2.5 Flash / 2.0 Thinking / 联网搜索 (Google Search Grounding) / 思考链 (Reasoning)** 等全系功能特性。
+本项目采用原生 Node.js 实现，无多余第三方冗余依赖，具备 **0 安全漏洞** 架构。内置全功能**现代化液态玻璃线性动画 WebUI** 与 **OpenAI 兼容接口**，采用全扁平化视觉设计，无任何 Emoji，深度适配 Google 最近更新的 **Gemini 3.8 Flash / 3.8 Pro / 3.0 Flash / 2.0 Flash / 联网搜索 (Google Search Grounding) / 思考链 (Reasoning)** 等全系功能特性。
 
 ---
 
@@ -19,8 +19,9 @@ Gemini 是谷歌推出的新一代人工智能大模型。本项目通过 Vercel
 - **资源保护**：监听客户端断开事件并立即销毁上游请求，彻底防止长连接悬挂与 API Quota 浪费。
 
 ### 2. 深度适配 Google 最新功能性模型
-- **Gemini 2.5 Pro**：旗舰级复杂逻辑推理、超强代码生成与长程任务规划。
-- **Gemini 2.5 Flash**：新一代全能高效模型，平衡自适应思考速度与顶级推理质量。
+- **Gemini 3.8 Flash**：Google 最新一代 GA 全能主力模型，具备极致响应速度与自适应推理。
+- **Gemini 3.8 Pro**：旗舰级深度思考、复杂逻辑、高难度架构与顶尖编码能力。
+- **Gemini 3.0 Flash**：低延迟高效工作模型，适应高吞吐日常场景。
 - **Gemini 2.0 Flash / 2.0 Flash Lite**：GA 正式版极速多模态与超低延迟生成。
 - **Gemini 2.0 Flash Thinking Exp**：深度思考推理模型，完整输出内部思考脉络。
 - **深度思考链（Reasoning / Thought Trace）**：
@@ -66,7 +67,7 @@ Gemini 是谷歌推出的新一代人工智能大模型。本项目通过 Vercel
    进入项目 Settings -> Domains 添加你的域名。为获得最快速度，建议将 CNAME 解析至 cname-china.vercel-dns.com。
 
 4. **开始使用**  
-   访问域名即可体验液态玻璃 WebUI，填入 API Key 即可畅享 Gemini 2.5 / 2.0 强大能力！
+   访问域名即可体验液态玻璃 WebUI，填入 API Key 即可畅享 Gemini 3.8 / 2.0 强大能力！
 
 ---
 
@@ -74,7 +75,7 @@ Gemini 是谷歌推出的新一代人工智能大模型。本项目通过 Vercel
 
 ### 1. 原生 Gemini API 透明代理
 ```bash
-curl -X POST "https://your-domain.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=YOUR_API_KEY&alt=sse" \
+curl -X POST "https://your-domain.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?key=YOUR_API_KEY&alt=sse" \
   -H "Content-Type: application/json" \
   -d '{
     "contents": [{ "role": "user", "parts": [{ "text": "你好，请自我介绍！" }] }]
@@ -87,7 +88,7 @@ curl -X POST "https://your-domain.com/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
-    "model": "gemini-2.5-pro",
+    "model": "gemini-3.8-pro",
     "stream": true,
     "messages": [
       {"role": "user", "content": "请推导三门问题的概率"}

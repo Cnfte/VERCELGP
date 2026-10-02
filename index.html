@@ -686,6 +686,7 @@
 
         .msg-row.user {
             justify-content: flex-end;
+            align-items: flex-end;
         }
 
         .avatar {
@@ -708,19 +709,31 @@
         .bubble {
             max-width: min(85%, 720px);
             position: relative;
-            font-size: 14.5px;
-            line-height: 1.68;
+            font-size: 14px;
+            line-height: 1.6;
             word-break: break-word;
         }
 
         /* 用户气泡 */
         .bubble.user-bubble {
             background: var(--user-bubble);
-            border-radius: 20px 20px 4px 20px;
-            padding: 12px 18px;
+            border-radius: 18px 18px 4px 18px;
+            padding: 10px 16px;
             color: #fff;
-            box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 4px 16px -2px rgba(99, 102, 241, 0.35);
+            word-break: break-word;
+            width: fit-content;
+            max-width: min(85%, 680px);
+            min-width: 0;
+            display: inline-block;
+            align-self: flex-end;
+        }
+
+        .bubble.user-bubble .user-text {
+            line-height: 1.55;
+            font-size: 14.5px;
             white-space: pre-wrap;
+            word-break: break-word;
         }
 
         /* 气泡内上传的文件/图片缩略图 */
@@ -1574,26 +1587,33 @@
                     <div style="position:relative">
                         <div class="model-pill" onclick="toggleModelDropdown(event)">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span id="headerModelName">Gemini 2.5 Flash</span>
-                            <span class="model-pill-badge" id="headerModelBadge">Adaptive</span>
+                            <span id="headerModelName">Gemini 3.8 Flash</span>
+                            <span class="model-pill-badge" id="headerModelBadge">Latest GA</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <path d="M6 9l6 6 6-6"></path>
                             </svg>
                         </div>
                         <div class="model-dropdown" id="modelDropdown">
-                            <div class="model-opt-item" onclick="selectModel('gemini-2.5-pro')">
+                            <div class="model-opt-item" onclick="selectModel('gemini-3.8-flash')">
                                 <div class="model-opt-header">
-                                    <span>Gemini 2.5 Pro</span>
+                                    <span>Gemini 3.8 Flash</span>
+                                    <span class="model-pill-badge" style="background:rgba(6,182,212,0.25);color:#67e8f9">Latest GA</span>
+                                </div>
+                                <div class="model-opt-desc">Google 最新一代全能主力，极速响应与自适应推理</div>
+                            </div>
+                            <div class="model-opt-item" onclick="selectModel('gemini-3.8-pro')">
+                                <div class="model-opt-header">
+                                    <span>Gemini 3.8 Pro</span>
                                     <span class="model-pill-badge" style="background:rgba(168,85,247,0.25);color:#d8b4fe">Reasoning</span>
                                 </div>
-                                <div class="model-opt-desc">旗舰级深度思考、复杂逻辑与高难度编程</div>
+                                <div class="model-opt-desc">3.8 系列顶级深度思考、复杂逻辑与高难度编程</div>
                             </div>
-                            <div class="model-opt-item" onclick="selectModel('gemini-2.5-flash')">
+                            <div class="model-opt-item" onclick="selectModel('gemini-3.0-flash')">
                                 <div class="model-opt-header">
-                                    <span>Gemini 2.5 Flash</span>
-                                    <span class="model-pill-badge" style="background:rgba(6,182,212,0.25);color:#67e8f9">Speed & Think</span>
+                                    <span>Gemini 3.0 Flash</span>
+                                    <span class="model-pill-badge">3.0 Speed</span>
                                 </div>
-                                <div class="model-opt-desc">新一代全能型主力模型，高速自适应思考</div>
+                                <div class="model-opt-desc">高效低延迟主力工作模型</div>
                             </div>
                             <div class="model-opt-item" onclick="selectModel('gemini-2.0-flash')">
                                 <div class="model-opt-header">
@@ -1776,7 +1796,7 @@
                 <div class="compat-box">
                     <div style="font-size:12.5px;font-weight:700;color:#c7d2fe"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> OpenAI 兼容 Base URL（可对接 NextChat / ChatBox / LobeChat）</div>
                     <div class="compat-url-bar" id="compatUrlDisplay" onclick="copyCompatUrl()">请先配置 API Key</div>
-                    <div style="font-size:11px;color:var(--text-muted)">点击链接一键复制 · 模型名称直接填写 gemini-2.5-flash 等即可</div>
+                    <div style="font-size:11px;color:var(--text-muted)">点击链接一键复制 · 模型名称直接填写 gemini-3.8-flash 等即可</div>
                 </div>
             </div>
 
@@ -1798,19 +1818,18 @@
         const CFG_KEY = 'VERCELGP_CONFIG_V4';
 
         const PRESET_MODELS = [
-            { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', badge: 'Adaptive', desc: '新一代全能主力，极速响应与自适应推理' },
-            { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', badge: 'Reasoning', desc: '旗舰级深思模型，复杂逻辑与顶尖编程' },
+            { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash', badge: 'Latest GA', desc: 'Google 最新一代全能主力，极速响应与自适应推理' },
+            { id: 'gemini-3.8-pro', name: 'Gemini 3.8 Pro', badge: 'Reasoning', desc: '3.8 系列顶级深度思考、复杂逻辑与高难度编程' },
+            { id: 'gemini-3.0-flash', name: 'Gemini 3.0 Flash', badge: '3.0 Speed', desc: '高效低延迟主力工作模型' },
             { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', badge: 'Standard', desc: 'GA 标准版，高速多模态与流式输出' },
             { id: 'gemini-2.0-flash-thinking-exp-01-21', name: 'Gemini 2.0 Flash Thinking', badge: 'Thought Trace', desc: '显式透明思维推理过程' },
             { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite', badge: 'Ultra Fast', desc: '极简极速，轻量高吞吐' },
-            { id: 'gemini-2.0-pro-exp-02-05', name: 'Gemini 2.0 Pro Exp', badge: 'Pro Exp', desc: '顶尖推理能力实验型' },
-            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', badge: '2M Context', desc: '200 万超长上下文长文档理解' },
-            { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', badge: 'Fast 1.5', desc: '上一代轻快稳定版' }
+            { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', badge: '2M Context', desc: '200 万超长上下文长文档理解' }
         ];
 
         let config = {
             apiKey: '',
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.8-flash',
             temperature: 1.0,
             systemPrompt: '',
             webSearch: false,
@@ -1856,6 +1875,12 @@
                 const saved = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
                 config = { ...config, ...saved };
             } catch (_) {}
+
+            // 自动平滑迁移已弃用的旧模型到最新的 gemini-3.8-flash
+            if (!config.model || config.model === 'gemini-2.5-flash' || config.model === 'gemini-2.5-pro') {
+                config.model = 'gemini-3.8-flash';
+                saveConfigOnly();
+            }
 
             updateHeaderModelUI();
             updateFeatureTogglesUI();
@@ -2107,7 +2132,7 @@
                             </svg>
                         </div>
                         <div class="welcome-title">有什么我可以协助你的？</div>
-                        <div class="welcome-subtitle">搭载 Google Gemini 2.5 / 2.0 旗舰模型，支持思考链、实时联网与多模态分析</div>
+                        <div class="welcome-subtitle">搭载 Google Gemini 3.8 / 2.0 旗舰模型，支持思考链、实时联网与多模态分析</div>
                         <div class="quick-prompts-grid">
                             <div class="quick-prompt-card" onclick="quickSend('用 Python 实现一个支持并发与限流的异步下载器，给出详细解析与单元测试')">
                                 <div class="prompt-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>异步并发下载器</div>
@@ -2135,8 +2160,9 @@
                 if (m.role === 'user') {
                     // 用户消息（含附件缩略图）
                     let attachmentsHtml = '';
-                    if (m.files && m.files.length) {
-                        attachmentsHtml = `<div class="bubble-attachments">` + m.files.map(f => {
+                    const validFiles = (m.files || []).filter(f => f && f.data);
+                    if (validFiles.length) {
+                        attachmentsHtml = `<div class="bubble-attachments">` + validFiles.map(f => {
                             if (f.type.startsWith('image/')) {
                                 return `<img src="${f.data}" class="bubble-img-preview" onclick="openImageModal('${f.data}')" alt="附件">`;
                             } else {
@@ -2147,10 +2173,7 @@
 
                     return `
                         <div class="msg-row user">
-                            <div class="bubble user-bubble">
-                                ${attachmentsHtml}
-                                <div>${sanitizeHtml(m.text || '')}</div>
-                            </div>
+                            <div class="bubble user-bubble">${attachmentsHtml}<div class="user-text">${sanitizeHtml(m.text || '')}</div></div>
                         </div>
                     `;
                 } else {
@@ -2444,7 +2467,7 @@
                 { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_NONE' }
             ];
 
-            const modelId = (config.model || 'gemini-2.5-flash').replace(/^models\//, '');
+            const modelId = (config.model || 'gemini-3.8-flash').replace(/^models\//, '');
             const targetUrl = `/v1beta/models/${encodeURIComponent(modelId)}:streamGenerateContent?key=${encodeURIComponent(config.apiKey)}&alt=sse`;
 
             try {
@@ -2753,7 +2776,8 @@
         }
 
         function handleKeyDown(e) {
-            if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
+            if (e.isComposing || e.keyCode === 229) return;
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendAction();
             }

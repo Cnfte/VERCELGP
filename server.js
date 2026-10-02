@@ -155,7 +155,7 @@ function isValidApiKey(key) {
 }
 
 // 严格模型名称安全校验
-function sanitizeModelName(name, defaultModel = 'gemini-2.0-flash') {
+function sanitizeModelName(name, defaultModel = 'gemini-3.8-flash') {
     if (!name || typeof name !== 'string') return defaultModel;
     const clean = name.replace(/^models\//, '').trim();
     if (!/^[a-zA-Z0-9_\-\.:]+$/.test(clean)) return defaultModel;
@@ -511,7 +511,7 @@ async function handleOpenAICompatible(req, res, apiKey, subPath) {
             });
         }
 
-        const modelRaw = body.model || 'gemini-2.0-flash';
+        const modelRaw = body.model || 'gemini-3.8-flash';
         const geminiModel = sanitizeModelName(modelRaw);
         const isStream = body.stream === true;
 
@@ -781,14 +781,14 @@ app.get('/health', (req, res) => {
         uptime: Math.floor(process.uptime()),
         timestamp: Date.now(),
         models_supported: [
+            'gemini-3.8-flash',
+            'gemini-3.8-pro',
+            'gemini-3.0-flash',
             'gemini-2.5-pro',
-            'gemini-2.5-flash',
             'gemini-2.0-flash',
             'gemini-2.0-flash-lite',
             'gemini-2.0-flash-thinking-exp-01-21',
-            'gemini-2.0-pro-exp-02-05',
-            'gemini-1.5-pro',
-            'gemini-1.5-flash'
+            'gemini-1.5-pro'
         ],
         features: [
             'reasoning_content (thinking process)',
