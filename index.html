@@ -1573,7 +1573,7 @@
                     <!-- 模型快捷切换 Pill -->
                     <div style="position:relative">
                         <div class="model-pill" onclick="toggleModelDropdown(event)">
-                            <span style="font-size:14px">✨</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                             <span id="headerModelName">Gemini 2.5 Flash</span>
                             <span class="model-pill-badge" id="headerModelBadge">Adaptive</span>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1709,7 +1709,7 @@
                     </svg>
                     <span>系统配置与偏好设置</span>
                 </div>
-                <button class="modal-close-btn" onclick="closeSettings()">✕</button>
+                <button class="modal-close-btn" onclick="closeSettings()" title="关闭"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
 
             <div class="modal-body">
@@ -1721,7 +1721,7 @@
                     </label>
                     <div style="position:relative">
                         <input type="password" id="inputApiKey" class="form-input" placeholder="AIzaSy..." autocomplete="off">
-                        <button type="button" onclick="toggleKeyVisibility()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-sub);cursor:pointer">👁</button>
+                        <button type="button" onclick="toggleKeyVisibility()" title="切换可见性" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-sub);cursor:pointer;display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                     </div>
                     <div class="form-helper">Key 仅保存于浏览器本地（LocalStorage），零服务器留存。</div>
                 </div>
@@ -1750,11 +1750,11 @@
                     <div style="display:flex;flex-direction:column;gap:10px">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
                             <input type="checkbox" id="checkWebSearch" style="accent-color:var(--accent-cyan)">
-                            <span>🌐 默认开启 Google Search Grounding 实时联网搜索</span>
+                            <span>默认开启 Google Search Grounding 实时联网搜索</span>
                         </label>
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
                             <input type="checkbox" id="checkThinking" style="accent-color:var(--accent-purple)">
-                            <span>🧠 默认开启 Deep Thinking 深度思考（适用 2.5 / 2.0 Thinking 模型）</span>
+                            <span>默认开启 Deep Thinking 深度思考（适用 2.5 / 2.0 Thinking 模型）</span>
                         </label>
                     </div>
                 </div>
@@ -1764,17 +1764,17 @@
                     <label class="form-label">系统人设（System Prompt）</label>
                     <textarea id="inputSystemPrompt" class="form-textarea" rows="3" placeholder="例如：你是一个精通 JavaScript、Node.js 与算法架构的资深全栈工程师..."></textarea>
                     <div class="quick-role-tags">
-                        <span class="role-tag-btn" onclick="applyPresetPrompt('全栈工程师')">💻 全栈架构师</span>
-                        <span class="role-tag-btn" onclick="applyPresetPrompt('翻译官')">🌐 专业级双语翻译</span>
-                        <span class="role-tag-btn" onclick="applyPresetPrompt('文案写手')">✍️ 创意文案与润色</span>
-                        <span class="role-tag-btn" onclick="applyPresetPrompt('数学逻辑')">🔬 数学与逻辑推理</span>
-                        <span class="role-tag-btn" onclick="applyPresetPrompt('极简助理')">🤖 极简直入主题</span>
+                        <span class="role-tag-btn" onclick="applyPresetPrompt('全栈工程师')">全栈架构师</span>
+                        <span class="role-tag-btn" onclick="applyPresetPrompt('翻译官')">专业级双语翻译</span>
+                        <span class="role-tag-btn" onclick="applyPresetPrompt('文案写手')">创意文案与润色</span>
+                        <span class="role-tag-btn" onclick="applyPresetPrompt('数学逻辑')">数学与逻辑推理</span>
+                        <span class="role-tag-btn" onclick="applyPresetPrompt('极简助理')">极简直入主题</span>
                     </div>
                 </div>
 
                 <!-- OpenAI 兼容配置 -->
                 <div class="compat-box">
-                    <div style="font-size:12.5px;font-weight:700;color:#c7d2fe">🔗 OpenAI 兼容 Base URL（可对接 NextChat / ChatBox / LobeChat）</div>
+                    <div style="font-size:12.5px;font-weight:700;color:#c7d2fe"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> OpenAI 兼容 Base URL（可对接 NextChat / ChatBox / LobeChat）</div>
                     <div class="compat-url-bar" id="compatUrlDisplay" onclick="copyCompatUrl()">请先配置 API Key</div>
                     <div style="font-size:11px;color:var(--text-muted)">点击链接一键复制 · 模型名称直接填写 gemini-2.5-flash 等即可</div>
                 </div>
@@ -1885,7 +1885,7 @@
             updateFeatureTogglesUI();
             updateCompatUrlDisplay();
             closeSettings();
-            showToast('✓ 设置已保存');
+            showToast('设置已保存');
         }
 
         function updateHeaderModelUI() {
@@ -1912,14 +1912,14 @@
             config.webSearch = !config.webSearch;
             updateFeatureTogglesUI();
             saveConfigOnly();
-            showToast(config.webSearch ? '🌐 已启用 Google 实时联网检索' : '已关闭联网检索');
+            showToast(config.webSearch ? '已启用 Google 实时联网检索' : '已关闭联网检索');
         }
 
         function toggleThinking() {
             config.thinking = !config.thinking;
             updateFeatureTogglesUI();
             saveConfigOnly();
-            showToast(config.thinking ? '🧠 已启用深度思考与推理链' : '已关闭深度思考模式');
+            showToast(config.thinking ? '已启用深度思考与推理链' : '已关闭深度思考模式');
         }
 
         function saveConfigOnly() {
@@ -2040,7 +2040,7 @@
             } else {
                 fileContent = `# ${current.title}\n\n`;
                 for (const m of current.messages) {
-                    const roleName = m.role === 'user' ? '👤 **用户**' : '✨ **Gemini**';
+                    const roleName = m.role === 'user' ? '**用户**' : '**Gemini**';
                     fileContent += `### ${roleName}\n\n${m.text || ''}\n\n---\n\n`;
                 }
                 fileName += '.md';
@@ -2056,7 +2056,7 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast(`✓ 已导出为 ${fileName}`);
+            showToast(`已导出为 ${fileName}`);
         }
 
         function filterSessions(query) {
@@ -2082,7 +2082,7 @@
                     </svg>
                     <span class="session-title">${sanitizeHtml(s.title || '新对话')}</span>
                     <div class="session-actions">
-                        <button class="session-btn" onclick="deleteChat('${sanitizeAttr(s.id)}', event)" title="删除对话">✕</button>
+                        <button class="session-btn" onclick="deleteChat('${sanitizeAttr(s.id)}', event)" title="删除对话"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                     </div>
                 </div>
             `).join('');
@@ -2110,19 +2110,19 @@
                         <div class="welcome-subtitle">搭载 Google Gemini 2.5 / 2.0 旗舰模型，支持思考链、实时联网与多模态分析</div>
                         <div class="quick-prompts-grid">
                             <div class="quick-prompt-card" onclick="quickSend('用 Python 实现一个支持并发与限流的异步下载器，给出详细解析与单元测试')">
-                                <div class="prompt-card-title">💻 异步并发下载器</div>
+                                <div class="prompt-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>异步并发下载器</div>
                                 <div class="prompt-card-desc">生成 Python 高性能异步代码并解析架构</div>
                             </div>
                             <div class="quick-prompt-card" onclick="quickSend('联网搜索今天 Google 与 OpenAI 在大模型技术领域的最新进展与要闻')">
-                                <div class="prompt-card-title">🌐 实时大模型前沿进展</div>
+                                <div class="prompt-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>实时大模型前沿进展</div>
                                 <div class="prompt-card-desc">启动 Google 实时检索并归纳行业动态</div>
                             </div>
                             <div class="quick-prompt-card" onclick="quickSend('请深度思考并解答一道复杂的概率论谜题：三门问题（Monty Hall）及其变体')">
-                                <div class="prompt-card-title">🧠 深度思考推理题目</div>
+                                <div class="prompt-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"></path></svg>深度思考推理题目</div>
                                 <div class="prompt-card-desc">展开完整数理推导步骤与直观反思</div>
                             </div>
                             <div class="quick-prompt-card" onclick="quickSend('帮我把这段中文技术方案润色为符合顶级英文期刊规范的学术论文段落')">
-                                <div class="prompt-card-title">✍️ 学术级多语言润色</div>
+                                <div class="prompt-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>学术级多语言润色</div>
                                 <div class="prompt-card-desc">精准提炼技术术语与句式表达</div>
                             </div>
                         </div>
@@ -2140,7 +2140,7 @@
                             if (f.type.startsWith('image/')) {
                                 return `<img src="${f.data}" class="bubble-img-preview" onclick="openImageModal('${f.data}')" alt="附件">`;
                             } else {
-                                return `<div class="bubble-file-chip">📄 ${sanitizeHtml(f.name)}</div>`;
+                                return `<div class="bubble-file-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg> ${sanitizeHtml(f.name)}</div>`;
                             }
                         }).join('') + `</div>`;
                     }
@@ -2284,7 +2284,7 @@
             const pre = btn.closest('pre');
             const code = pre?.querySelector('code')?.textContent || '';
             copyToClipboard(code, () => {
-                btn.innerHTML = '<span>✓ 已复制</span>';
+                btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>已复制</span>';
                 setTimeout(() => {
                     btn.innerHTML = `
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2526,7 +2526,7 @@
                 if (err.name === 'AbortError') return;
                 aiMessageObj.isError = true;
                 aiMessageObj.isThinking = false;
-                aiMessageObj.text = `❌ 请求发生错误: ${err.message}`;
+                aiMessageObj.text = `[错误] 请求发生错误: ${err.message}`;
                 saveChatDatabase();
                 renderMessages();
                 showToast(`请求失败: ${err.message}`);
@@ -2594,9 +2594,9 @@
 
             shelf.innerHTML = attachedFiles.map((f, i) => `
                 <div class="attachment-chip">
-                    ${f.type.startsWith('image/') ? `<img src="${f.data}" class="attachment-thumb">` : '<span>📄</span>'}
+                    ${f.type.startsWith('image/') ? `<img src="${f.data}" class="attachment-thumb">` : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>'}
                     <span>${sanitizeHtml(f.name)}</span>
-                    <button class="attachment-del-btn" onclick="removeAttachedFile(${i})">✕</button>
+                    <button class="attachment-del-btn" onclick="removeAttachedFile(${i})" title="移除"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
             `).join('');
         }
@@ -2742,7 +2742,7 @@
                         return `<option value="${sanitizeAttr(id)}" ${id === config.model ? 'selected' : ''}>${sanitizeHtml(m.displayName || id)}</option>`;
                     }).join('');
                 }
-                showToast(`✓ 已成功刷新 ${models.length} 个最新模型`);
+                showToast(`已成功刷新 ${models.length} 个最新模型`);
             } catch (e) {
                 showToast(`刷新失败: ${e.message}`);
             }

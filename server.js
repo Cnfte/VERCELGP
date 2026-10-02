@@ -147,11 +147,11 @@ function extractApiKey(req) {
     return null;
 }
 
-// 严格 API Key 格式校验（防注入与异常输入）
+// 严格 API Key 格式校验（支持标准 AIza... 及新版 AQ.... 等包含点号的密钥）
 function isValidApiKey(key) {
     if (!key || typeof key !== 'string') return false;
     const clean = key.trim();
-    return clean.length >= 10 && clean.length <= 256 && /^[a-zA-Z0-9_\-]+$/.test(clean);
+    return clean.length >= 8 && clean.length <= 512 && /^[a-zA-Z0-9_.\-:=]+$/.test(clean);
 }
 
 // 严格模型名称安全校验
@@ -901,10 +901,10 @@ module.exports = app;
 
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`✨ VERCELGP v${VERSION} running on http://localhost:${PORT}`);
-        console.log(`🌐 WebUI:         http://localhost:${PORT}/`);
-        console.log(`📡 Native Proxy:  http://localhost:${PORT}/v1beta/models/...`);
-        console.log(`🔄 OpenAI Compat: http://localhost:${PORT}/v1/chat/completions`);
-        console.log(`🔗 Legacy Compat: http://localhost:${PORT}/turnopenai/{KEY}/v1`);
+        console.log(`[VERCELGP] v${VERSION} running on http://localhost:${PORT}`);
+        console.log(`[WebUI]         http://localhost:${PORT}/`);
+        console.log(`[Native Proxy]  http://localhost:${PORT}/v1beta/models/...`);
+        console.log(`[OpenAI Compat] http://localhost:${PORT}/v1/chat/completions`);
+        console.log(`[Legacy Compat] http://localhost:${PORT}/turnopenai/{KEY}/v1`);
     });
 }
